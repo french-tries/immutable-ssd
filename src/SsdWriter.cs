@@ -1,51 +1,65 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using deskpi.src;
 
 namespace blink.src
 {
     public class SsdWriter
     {
-        public delegate void WriteAction(int pin, bool value);
+        public delegate byte SegmentsValues(int index);
+        public delegate void StepApplier(Step step);
 
-        public SsdWriter(WriteAction write, ImmutableList<int> segmentPins,
-            ImmutableList<int> digitPins)
+        public SsdWriter(StepApplier applyStep, 
+            ImmutableList<uint> segmentPins, ImmutableList<uint> digitPins)
         {
-            this.Write = write;
+            this.applyStep = applyStep;
             this.segmentPins = segmentPins;
             this.digitPins = digitPins;
 
             Debug.Assert(this.segmentPins.Count == 8);
         }
 
-        public void WriteValue(byte segments, int digit)
-        {
-            if (digit < 0 || digit >= digitPins.Count)
-            {
-                Clear();
-            }
-            else
-            {
-                Write(digitPins[digit >= 0 ? digit - 1 : digitPins.Count - 1], false);
-
-                for (int i = 0; i < segmentPins.Count; ++i)
-                {
-                    Write(segmentPins[i], (segments & (1 << (7-i))) != 0);
-                }
-
-                Write(digitPins[digit], true);
-            }
-        }
-
-        public void Clear()
+        public void ClearSteps()
         {
             for (int i = 0; i < digitPins.Count; ++i)
             {
-                Write(digitPins[i], false);
+                applyStep(new WriteStep(digitPins[i], false));
             }
             for (int i = 0; i < segmentPins.Count; ++i)
             {
-                Write(segmentPins[i], false);
+                applyStep(new WriteStep(segmentPins[i], false));
+            }
+        }
+
+        public void WriteSteps(byte segments, int digit)
+        {
+            if (digit < 0 || digit >= digitPins.Count)
+            {
+                ClearSteps();
+                return;
+            }
+
+            applyStep(new WriteStep(
+                digitPins[digit > 0 ? digit - 1 : digitPins.Count - 1], false));
+
+            for (int i = 0; i < segmentPins.Count; ++i)
+            {
+                applyStep(new WriteStep(
+                    segmentPins[i], (segments & (1 << (7 - i))) != 0));
+            }
+
+            applyStep(new WriteStep(digitPins[digit], true));
+        }
+
+        public void CycleSteps(SegmentsValues values, uint interval)
+        {
+            var sleepStep = new SleepStep(interval);
+
+            for (int i = 0; i < AvailableDigits; ++i)
+            {
+                WriteSteps(values(i), i);
+                applyStep(sleepStep);
             }
         }
 
@@ -56,9 +70,8 @@ namespace blink.src
             }
         }
 
-        private readonly WriteAction Write;
-
-        private readonly ImmutableList<int> segmentPins;
-        private readonly ImmutableList<int> digitPins;
+        private readonly StepApplier applyStep;
+        private readonly ImmutableList<uint> segmentPins;
+        private readonly ImmutableList<uint> digitPins;
     }
 }
