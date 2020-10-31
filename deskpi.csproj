@@ -84,6 +84,9 @@
     <Compile Include="test\SsdWriterTests.cs" />
     <Compile Include="src\Step.cs" />
     <Compile Include="src\Glyph.cs" />
+    <Compile Include="src\ScrollingGlyphSelector.cs" />
+    <Compile Include="test\ScrollingGlyphSelectorTests.cs" />
+    <Compile Include="test\GlyphTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

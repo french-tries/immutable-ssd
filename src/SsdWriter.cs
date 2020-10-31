@@ -8,7 +8,6 @@ namespace blink.src
     public class SsdWriter
     {
         public delegate byte SegmentsValues(int index);
-        public delegate void StepApplier(Step step);
 
         public SsdWriter(StepApplier applyStep, 
             ImmutableList<uint> segmentPins, ImmutableList<uint> digitPins)

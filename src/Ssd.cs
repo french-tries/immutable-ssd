@@ -3,7 +3,7 @@ using System.Timers;
 
 namespace blink.src
 {
- /*   public class Ssd
+    public class Ssd
     {
         public int NextDigit(int digit) =>
             digit + 1 < Writer.AvailableDigits ? digit + 1 : 0;
@@ -34,7 +34,7 @@ namespace blink.src
         private void Write(int digit)
         {
             byte segments = Converter.GetSegments(digit < Text.Length ? Text[digit] : ' ');
-            Writer.WriteValue(segments, digit);
+            //Writer.WriteValue(segments, digit);
         }
 
         private static Func<Ssd, int, ElapsedEventHandler> MultiplexDigitEventFunc = 
@@ -49,5 +49,5 @@ namespace blink.src
         private readonly string Text;
 
         private Timer MultiTimer;
-    }*/
+    }
 }

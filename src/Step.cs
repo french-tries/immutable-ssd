@@ -26,4 +26,6 @@ namespace deskpi.src
 
         public uint Length { get; }
     }
+
+    public delegate void StepApplier(Step step);
 }
