@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using blink.src;
 using deskpi.src;
@@ -7,101 +6,92 @@ using NUnit.Framework;
 
 namespace deskpi.test
 {
+    public static class StepTester
+    {
+        public static ImmutableList<Step> TestEmpty(this ImmutableList<Step> steps)
+        {
+            Assert.AreEqual(ImmutableList<Step>.Empty, steps);
+            return steps;
+        }
+
+        public static ImmutableList<Step> TestWriteStep(this ImmutableList<Step> steps, uint pin, bool value)
+        {
+            if (steps[0] is WriteStep writeStep)
+            {
+                Assert.AreEqual(pin, writeStep.Pin);
+                Assert.AreEqual(value, writeStep.Value);
+            }
+            else
+            {
+                Assert.Fail();
+            }
+            return steps.RemoveAt(0);
+        }
+
+        public static ImmutableList<Step> TestSleepStep(this ImmutableList<Step> steps, int length)
+        {
+            if (steps[0] is SleepStep sleepStep)
+            {
+                Assert.AreEqual(length, sleepStep.Length);
+            }
+            else
+            {
+                Assert.Fail();
+            }
+            return steps.RemoveAt(0);
+        }
+    }
+
     [TestFixture]
     public class SsdWriterTests
     {
-        class TestApplier
-        {
-            public TestApplier()
-            {
-                Steps = new List<Step>();
-            }
-
-            public List<Step> Steps { get; }
-
-            public void Apply(Step step)
-            {
-                Steps.Add(step);
-            }
-
-            public void TestWriteStep(int id,uint pin, bool value)
-            {
-                if (Steps[id] is WriteStep writeStep)
-                {
-                    Assert.IsTrue(pin == writeStep.Pin && value == writeStep.Value);
-                }
-                else
-                {
-                    Assert.Fail();
-                }
-            }
-
-            public void TestSleepStep(int id, int length)
-            {
-                if (Steps[id] is SleepStep sleepStep)
-                {
-                    Assert.IsTrue(length == sleepStep.Length);
-                }
-                else
-                {
-                    Assert.Fail();
-                }
-            }
-        }
-
         [TestCase]
         public void ClearSteps_Expects_WriteZerosToAllPins()
         {
-            var applier = new TestApplier();
             var writer = new SsdWriter(
-                applier.Apply,
                 ImmutableList<uint>.Empty.Add(0),
                 ImmutableList<uint>.Empty.Add(2).Add(3)
                 );
-            writer.ClearSteps();
+            var steps = ImmutableList<Step>.Empty;
 
-            applier.TestWriteStep(0, 2, false);
-            applier.TestWriteStep(1, 3, false);
-            applier.TestWriteStep(2, 0, false);
-
-            Assert.IsTrue(applier.Steps.Count == 3);
+            writer.ClearSteps(steps)
+                .TestWriteStep(2, false)
+                .TestWriteStep(3, false)
+                .TestWriteStep(0, false)
+                .TestEmpty();
         }
 
         [TestCase]
         public void WriteSteps_Expects_ProperSteps()
         {
-            var applier = new TestApplier();
             var writer = new SsdWriter(
-                applier.Apply,
                 ImmutableList<uint>.Empty.Add(0).Add(1),
                 ImmutableList<uint>.Empty.Add(2).Add(3)
                 );
-            writer.WriteSteps(0b10000000, 0);
+            var steps = ImmutableList<Step>.Empty;
 
-            applier.TestWriteStep(0, 3, false);
-            applier.TestWriteStep(1, 0, true);
-            applier.TestWriteStep(2, 1, false);
-            applier.TestWriteStep(3, 2, true);
-
-            Assert.IsTrue(applier.Steps.Count == 4);
+            writer.WriteSteps(0b10000000, 0, steps)
+                .TestWriteStep(3, false)
+                .TestWriteStep(0, true)
+                .TestWriteStep(1, false)
+                .TestWriteStep(2, true)
+                .TestEmpty();
         }
 
         [TestCase]
         public void WriteSteps_WenInvalidPin_ClearSteps()
         {
-            var applier = new TestApplier();
             var writer = new SsdWriter(
-                applier.Apply,
                 ImmutableList<uint>.Empty.Add(0),
                 ImmutableList<uint>.Empty.Add(2).Add(3)
                 );
-            writer.WriteSteps(0b10000000, 2);
+            var steps = ImmutableList<Step>.Empty;
 
-            applier.TestWriteStep(0, 2, false);
-            applier.TestWriteStep(1, 3, false);
-            applier.TestWriteStep(2, 0, false);
-
-            Assert.IsTrue(applier.Steps.Count == 3);
+            writer.WriteSteps(0b10000000, 2, steps)
+                .TestWriteStep(2, false)
+                .TestWriteStep(3, false)
+                .TestWriteStep(0, false)
+                .TestEmpty();
         }
 
         [TestCase]
@@ -112,34 +102,30 @@ namespace deskpi.test
                 0b01000000,
                 0b10000000
             };
-            var applier = new TestApplier();
             var writer = new SsdWriter(
-                applier.Apply,
                 ImmutableList<uint>.Empty.Add(0).Add(1),
                 ImmutableList<uint>.Empty.Add(2).Add(3)
                 );
-            writer.CycleSteps(
-                (i) => {
+            var steps = ImmutableList<Step>.Empty;
+
+            steps = writer.CycleSteps(
+                (i) =>
+                {
                     if (i >= values.Count) return 0;
-                    else return values[i];
+                    return values[i];
                 },
-                5);
-
-            applier.TestWriteStep(0, 3, false);
-            applier.TestWriteStep(1, 0, false);
-            applier.TestWriteStep(2, 1, true);
-            applier.TestWriteStep(3, 2, true);
-
-            applier.TestSleepStep(4, 5);
-
-            applier.TestWriteStep(5, 2, false);
-            applier.TestWriteStep(6, 0, true);
-            applier.TestWriteStep(7, 1, false);
-            applier.TestWriteStep(8, 3, true);
-
-            applier.TestSleepStep(9, 5);
-
-            Assert.IsTrue(applier.Steps.Count == 10);
+                5, steps);
+            steps = steps.TestWriteStep(3, false); 
+            steps = steps.TestWriteStep(0, false);
+            steps = steps.TestWriteStep(1, true);
+            steps = steps.TestWriteStep(2, true);
+            steps = steps.TestSleepStep(5);
+            steps = steps.TestWriteStep(2, false);
+            steps = steps.TestWriteStep(0, true);
+            steps = steps.TestWriteStep(1, false);
+            steps = steps.TestWriteStep(3, true);
+            steps = steps.TestSleepStep(5);
+            steps = steps.TestEmpty();
         }
     }
 }
