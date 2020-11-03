@@ -43,16 +43,17 @@ namespace deskpi.src
         }
 
 
-        public Glyph GetGlyph(ImmutableList<Glyph> text, int index, int availableDigits, int currentTime)
+        public ImmutableList<Glyph> GetSelected(ImmutableList<Glyph> text,
+            int availableDigits, int currentTime)
         {
-            if (index >= text.Count)
-            {
-                return Glyph.Empty;
-            }
-
             var offset = GetOffset(text, availableDigits, currentTime);
 
-            return text[index + offset];
+            if (text.Count <= offset)
+            {
+                return ImmutableList<Glyph>.Empty;
+            }
+
+            return text.GetRange(offset, Math.Min(availableDigits, text.Count - offset));
         }
 
         private readonly int delay;

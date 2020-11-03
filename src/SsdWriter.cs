@@ -9,10 +9,12 @@ namespace blink.src
     {
         public delegate byte SegmentsValues(int index);
 
-        public SsdWriter(ImmutableList<uint> segmentPins, ImmutableList<uint> digitPins)
+        public SsdWriter(ImmutableList<uint> segmentPins, ImmutableList<uint> digitPins,
+            uint interval)
         {
             this.segmentPins = segmentPins;
             this.digitPins = digitPins;
+            this.interval = interval;
 
             Debug.Assert(this.segmentPins.Count == 8);
         }
@@ -51,7 +53,7 @@ namespace blink.src
             return steps;
         }
 
-        public ImmutableList<Step> CycleSteps(SegmentsValues values, uint interval,
+        public ImmutableList<Step> CycleSteps(SegmentsValues values,
             ImmutableList<Step> steps)
         {
             var sleepStep = new SleepStep(interval);
@@ -73,5 +75,7 @@ namespace blink.src
 
         private readonly ImmutableList<uint> segmentPins;
         private readonly ImmutableList<uint> digitPins;
+
+        private readonly uint interval;
     }
 }

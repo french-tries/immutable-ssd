@@ -50,8 +50,8 @@ namespace deskpi.test
         {
             var writer = new SsdWriter(
                 ImmutableList<uint>.Empty.Add(0),
-                ImmutableList<uint>.Empty.Add(2).Add(3)
-                );
+                ImmutableList<uint>.Empty.Add(2).Add(3),
+                1);
             var steps = ImmutableList<Step>.Empty;
 
             writer.ClearSteps(steps)
@@ -66,8 +66,8 @@ namespace deskpi.test
         {
             var writer = new SsdWriter(
                 ImmutableList<uint>.Empty.Add(0).Add(1),
-                ImmutableList<uint>.Empty.Add(2).Add(3)
-                );
+                ImmutableList<uint>.Empty.Add(2).Add(3),
+                1);
             var steps = ImmutableList<Step>.Empty;
 
             writer.WriteSteps(0b10000000, 0, steps)
@@ -83,8 +83,8 @@ namespace deskpi.test
         {
             var writer = new SsdWriter(
                 ImmutableList<uint>.Empty.Add(0),
-                ImmutableList<uint>.Empty.Add(2).Add(3)
-                );
+                ImmutableList<uint>.Empty.Add(2).Add(3),
+                1);
             var steps = ImmutableList<Step>.Empty;
 
             writer.WriteSteps(0b10000000, 2, steps)
@@ -104,8 +104,8 @@ namespace deskpi.test
             };
             var writer = new SsdWriter(
                 ImmutableList<uint>.Empty.Add(0).Add(1),
-                ImmutableList<uint>.Empty.Add(2).Add(3)
-                );
+                ImmutableList<uint>.Empty.Add(2).Add(3),
+                5);
             var steps = ImmutableList<Step>.Empty;
 
             steps = writer.CycleSteps(
@@ -113,8 +113,8 @@ namespace deskpi.test
                 {
                     if (i >= values.Count) return 0;
                     return values[i];
-                },
-                5, steps);
+                }, 
+                steps);
             steps = steps.TestWriteStep(3, false); 
             steps = steps.TestWriteStep(0, false);
             steps = steps.TestWriteStep(1, true);

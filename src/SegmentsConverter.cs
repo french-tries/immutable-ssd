@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using deskpi.src;
+
 namespace blink.src
 {
     public class SegmentsConverter
@@ -55,11 +57,12 @@ namespace blink.src
             this.values = values;
         }
 
-        public byte GetSegments(char character)
+        public byte GetSegments(Glyph glyph)
         {
-            if (values.ContainsKey(character))
+            if (values.ContainsKey(glyph.Character))
             {
-                return values[character];
+                byte dotMask = (byte)(glyph.Dot ? 0b00000001 : 0b00000000);
+                return (byte)(values[glyph.Character] & dotMask);
             }
             else
             {

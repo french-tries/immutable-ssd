@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Linq;
 using deskpi.src;
 using NUnit.Framework;
 
@@ -13,12 +14,10 @@ namespace deskpi.test
         {
             var selector = new ScrollingGlyphSelector(1,2,0);
 
-            Assert.AreEqual(Glyph.Empty, selector.GetGlyph(ImmutableList<Glyph>.Empty, 1, 2, 0));
+            Assert.AreEqual(ImmutableList<Glyph>.Empty, selector.GetSelected(ImmutableList<Glyph>.Empty, 2, 0));
         }
 
-        [TestCase(0)]
-        [TestCase(1)]
-        [TestCase(2)]
+        [TestCase]
         public void GetGlyph_AtStart_ReturnsWithoutOffset(int pos)
         {
             var text = ImmutableList<Glyph>.Empty.Add(new Glyph('a', true))
@@ -29,8 +28,37 @@ namespace deskpi.test
 
             var selector = new ScrollingGlyphSelector(delay, endsDelay, 0);
 
-            Assert.AreEqual(text[pos], selector.GetGlyph(text, pos, 3, 0));
+            Assert.AreEqual(text, selector.GetSelected(text, 3, 0));
         }
+
+        [TestCase]
+        public void GetGlyph_PartialDisplay_ReturnsSubList(int pos)
+        {
+            var text = ImmutableList<Glyph>.Empty.Add(new Glyph('a', true))
+                .Add(new Glyph('b', false)).Add(new Glyph('c', true));
+
+            int delay = 1;
+            int endsDelay = 2;
+
+            var selector = new ScrollingGlyphSelector(delay, endsDelay, 0);
+
+            Assert.True(text.GetRange(0,2).SequenceEqual(selector.GetSelected(text, 2, 0)));
+        }
+
+        [TestCase]
+        public void GetGlyph_TextTooShort_ReturnsSubList(int pos)
+        {
+            var text = ImmutableList<Glyph>.Empty.Add(new Glyph('a', true))
+                .Add(new Glyph('b', false)).Add(new Glyph('c', true));
+
+            int delay = 1;
+            int endsDelay = 2;
+
+            var selector = new ScrollingGlyphSelector(delay, endsDelay, 0);
+
+            Assert.True(text.SequenceEqual(selector.GetSelected(text, 4, 0)));
+        }
+
 
         [TestCase]
         public void GetGlyph_WithDelay_ReturnsWithOffset()
@@ -43,9 +71,9 @@ namespace deskpi.test
 
             var selector = new ScrollingGlyphSelector(delay, endsDelay, 0);
 
-            Assert.AreEqual(text[1], selector.GetGlyph(text, 0, 1, 2));
-            Assert.AreEqual(text[2], selector.GetGlyph(text, 0, 1, 3));
-            Assert.AreEqual(text[0], selector.GetGlyph(text, 0, 1, 5));
+            Assert.True(text.GetRange(1, 1).SequenceEqual(selector.GetSelected(text, 1, 2)));
+            Assert.True(text.GetRange(2, 1).SequenceEqual(selector.GetSelected(text, 1, 3)));
+            Assert.True(text.GetRange(0, 1).SequenceEqual(selector.GetSelected(text, 1, 5)));
         }
     }
 }
