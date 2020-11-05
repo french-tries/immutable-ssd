@@ -7,24 +7,24 @@ namespace deskpi.src
 
     public class WriteStep : Step
     {
-        public WriteStep(uint pin, bool value)
+        public WriteStep(int pin, bool value)
         {
             Pin = pin;
             Value = value;
         }
 
-        public uint Pin { get; }
+        public int Pin { get; }
         public bool Value { get; }
     }
 
     public class SleepStep : Step
     {
-        public SleepStep(uint length)
+        public SleepStep(int length)
         {
             Length = length;
         }
 
-        public uint Length { get; }
+        public int Length { get; }
     }
 
     public delegate void StepApplier(Step step);

@@ -78,15 +78,19 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\SegmentsConverter.cs" />
-    <Compile Include="src\SsdWriter.cs" />
+    <Compile Include="src\DirectSsdWriter.cs" />
     <Compile Include="test\SsdTests.cs" />
-    <Compile Include="test\SsdWriterTests.cs" />
-    <Compile Include="src\Step.cs" />
+    <Compile Include="test\DirectSsdWriterTests.cs" />
     <Compile Include="src\Glyph.cs" />
     <Compile Include="src\ScrollingGlyphSelector.cs" />
     <Compile Include="test\ScrollingGlyphSelectorTests.cs" />
     <Compile Include="test\GlyphTests.cs" />
-    <Compile Include="src\SsdStringWriter.cs" />
+    <Compile Include="src\StringSsdWriter.cs" />
+    <Compile Include="src\ITickable.cs" />
+    <Compile Include="src\IGPIO.cs" />
+    <Compile Include="src\Pin.cs" />
+    <Compile Include="test\StringSsdWriterTests.cs" />
+    <Compile Include="src\ISsdWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
