@@ -91,6 +91,7 @@
     <Compile Include="test\StringSsdWriterTests.cs" />
     <Compile Include="src\ISsdWriter.cs" />
     <Compile Include="src\Step.cs" />
+    <Compile Include="src\GpioHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
