@@ -87,10 +87,10 @@
     <Compile Include="test\GlyphTests.cs" />
     <Compile Include="src\StringSsdWriter.cs" />
     <Compile Include="src\ITickable.cs" />
-    <Compile Include="src\IGPIO.cs" />
     <Compile Include="src\Pin.cs" />
     <Compile Include="test\StringSsdWriterTests.cs" />
     <Compile Include="src\ISsdWriter.cs" />
+    <Compile Include="src\Step.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

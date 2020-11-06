@@ -7,29 +7,36 @@ using NUnit.Framework;
 
 namespace deskpi.test
 {
-    class TestGpio : IGPIO
+    class TestGpio
     {
-        public void Write(Pin pin, bool active)
+        public void Write(Step step)
         {
-            written = written.Enqueue((pin, active));
+            if (step is WriteStep writeStep)
+            {
+                written = written.Enqueue(writeStep);
+            }
+            else
+            {
+                Assert.Fail();
+            }
         }
 
         public void TestWritten(int expectedId, bool expectedActive)
         {
-            var (pin, active) = written.Peek();
+            var step = written.Peek();
 
-            Assert.AreEqual(expectedId, pin.Id);
-            Assert.AreEqual(expectedActive, active);
+            Assert.AreEqual(expectedId, step.Pin.Id);
+            Assert.AreEqual(expectedActive, step.Value);
 
             written = written.Dequeue();
         }
 
         public void TestEmpty()
         {
-            Assert.AreEqual(ImmutableQueue<(Pin, bool)>.Empty, written);
+            Assert.AreEqual(ImmutableQueue<WriteStep>.Empty, written);
         }
 
-        private ImmutableQueue<(Pin, bool)> written = ImmutableQueue<(Pin, bool)>.Empty;
+        private ImmutableQueue<WriteStep> written = ImmutableQueue<WriteStep>.Empty;
     }
 
     [TestFixture]
@@ -42,7 +49,7 @@ namespace deskpi.test
             var writer = new DirectSsdWriter(
                 ImmutableList<Pin>.Empty.Add(new Pin(0, true)),
                 ImmutableList<Pin>.Empty.Add(new Pin(2, true)).Add(new Pin(3, true)),
-                gpio, 1);
+                gpio.Write, 1);
 
             writer.Clear();
 
@@ -59,7 +66,7 @@ namespace deskpi.test
             var writer = new DirectSsdWriter(
                 ImmutableList<Pin>.Empty.Add(new Pin(0, true)).Add(new Pin(1, true)),
                 ImmutableList<Pin>.Empty.Add(new Pin(2, true)).Add(new Pin(3, true)),
-                gpio, 1);
+                gpio.Write, 1);
 
             writer.Write(0b10000000, 0);
 
@@ -77,7 +84,7 @@ namespace deskpi.test
             var writer = new DirectSsdWriter(
                 ImmutableList<Pin>.Empty.Add(new Pin(0, true)),
                 ImmutableList<Pin>.Empty.Add(new Pin(2, true)).Add(new Pin(3, true)),
-                gpio, 1);
+                gpio.Write, 1);
 
             writer.Write(0b10000000, 2);
             gpio.TestWritten(2, false);
@@ -98,7 +105,7 @@ namespace deskpi.test
             var writer = new DirectSsdWriter(
                 ImmutableList<Pin>.Empty.Add(new Pin(0, true)).Add(new Pin(1, true)),
                 ImmutableList<Pin>.Empty.Add(new Pin(2, true)).Add(new Pin(3, true)),
-                gpio, 5);
+                gpio.Write, 5);
 
             var tickable = writer.Write(
                 (i) =>

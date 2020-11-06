@@ -45,11 +45,11 @@ namespace blink.src
         }
 
         public DirectSsdWriter(ImmutableList<Pin> segmentPins, ImmutableList<Pin> digitPins,
-            IGPIO gPIO, int interval)
+            StepApplier applier, int interval)
         {
             this.segmentPins = segmentPins;
             this.digitPins = digitPins;
-            this.gPIO = gPIO;
+            this.applier = applier;
             this.interval = interval;
 
             Debug.Assert(this.segmentPins.Count == 8);
@@ -59,11 +59,11 @@ namespace blink.src
         {
             for (int i = 0; i < digitPins.Count; ++i)
             {
-                gPIO.Write(digitPins[i], false);
+                applier(new WriteStep(digitPins[i], false));
             }
             for (int i = 0; i < segmentPins.Count; ++i)
             {
-                gPIO.Write(segmentPins[i], false);
+                applier(new WriteStep(segmentPins[i], false));
             }
         }
 
@@ -74,13 +74,13 @@ namespace blink.src
                 Clear();
                 return;
             }
-            gPIO.Write(digitPins[digit > 0 ? digit - 1 : digitPins.Count - 1], false);
+            applier(new WriteStep(digitPins[digit > 0 ? digit - 1 : digitPins.Count - 1], false));
 
             for (int i = 0; i < segmentPins.Count; ++i)
             {
-                gPIO.Write(segmentPins[i], (segments & (1 << (7 - i))) != 0);
+                applier(new WriteStep(segmentPins[i], (segments & (1 << (7 - i))) != 0));
             }
-            gPIO.Write(digitPins[digit], true);
+            applier(new WriteStep(digitPins[digit], true));
         }
 
         public ITickable Write(Func<int, byte> values)
@@ -88,7 +88,7 @@ namespace blink.src
 
         public int AvailableDigits => digitPins.Count;
 
-        private readonly IGPIO gPIO;
+        private readonly StepApplier applier;
         private readonly ImmutableList<Pin> segmentPins;
         private readonly ImmutableList<Pin> digitPins;
 
