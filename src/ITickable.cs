@@ -1,8 +1,8 @@
 ﻿using System;
 namespace deskpi.src
 {
-    public interface ITickable
+    public interface ITickable<T>
     {
-        ITickable Tick(int currentTime);
+        T Tick(uint currentTime);
     }
 }

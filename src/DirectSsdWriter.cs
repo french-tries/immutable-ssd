@@ -7,52 +7,29 @@ namespace blink.src
 {
     public class DirectSsdWriter : ISsdWriter<Func<int, byte>>
     {
-        private class Tickable : ITickable
-        {
-            public Tickable(DirectSsdWriter writer, Func<int, byte> values,
-                int? lastUpdate = null, int currentDigit = 0)
-            {
-                this.writer = writer;
-                this.values = values;
-                this.lastUpdate = lastUpdate;
-                this.currentDigit = currentDigit;
-            }
-
-            public ITickable Tick(int currentTime)
-            {
-                if (lastUpdate == null)
-                {
-                    writer.Write(values(currentDigit), currentDigit);
-                    return new Tickable(writer, values, currentTime, currentDigit);
-                }
-                if (currentTime - lastUpdate < writer.interval)
-                {
-                    return this;
-                }
-                int nextDigit = currentDigit + 1;
-                if (nextDigit >= writer.AvailableDigits) nextDigit = 0;
-
-                writer.Write(values(nextDigit), nextDigit);
-
-                return new Tickable(writer, values,
-                    lastUpdate + writer.interval, nextDigit);
-            }
-
-            private readonly DirectSsdWriter writer;
-            private readonly Func<int, byte> values;
-            private readonly int? lastUpdate;
-            private readonly int currentDigit;
-        }
-
         public DirectSsdWriter(ImmutableList<Pin> segmentPins, ImmutableList<Pin> digitPins,
-            StepApplier applier, int interval)
+            StepApplier applier, uint interval)
         {
             this.segmentPins = segmentPins;
             this.digitPins = digitPins;
             this.applier = applier;
-            this.interval = interval;
+            this.timer = new ImmutableTimer(interval);
+            this.values = (arg) => 0;
+            this.currentDigit = digitPins.Count - 1;
 
             Debug.Assert(this.segmentPins.Count == 8);
+        }
+
+        private DirectSsdWriter(ImmutableList<Pin> segmentPins, ImmutableList<Pin> digitPins,
+            StepApplier applier, Func<int, byte> values, ImmutableTimer timer,
+            int? currentDigit = null)
+        {
+            this.segmentPins = segmentPins;
+            this.digitPins = digitPins;
+            this.applier = applier;
+            this.values = values;
+            this.timer = timer;
+            this.currentDigit = currentDigit ?? digitPins.Count - 1;
         }
 
         public void Clear()
@@ -83,8 +60,27 @@ namespace blink.src
             applier(new WriteStep(digitPins[digit], true));
         }
 
-        public ITickable Write(Func<int, byte> values)
-            => new Tickable(this, values);
+        public ISsdWriter<Func<int, byte>> Write(Func<int, byte> values)
+        {
+            return new DirectSsdWriter(segmentPins, digitPins, applier,
+                values, new ImmutableTimer(timer.Interval));
+        }
+
+        public ISsdWriter<Func<int, byte>> Tick(uint currentTime)
+        {
+            var newTimer = timer.Tick(currentTime);
+            if (timer == newTimer)
+            {
+                return this;
+            }
+            int nextDigit = currentDigit + 1;
+            if (nextDigit >= AvailableDigits) nextDigit = 0;
+
+            Write(values(nextDigit), nextDigit);
+
+            return new DirectSsdWriter(segmentPins, digitPins, applier, values,
+                newTimer, nextDigit);
+        }
 
         public int AvailableDigits => digitPins.Count;
 
@@ -92,6 +88,8 @@ namespace blink.src
         private readonly ImmutableList<Pin> segmentPins;
         private readonly ImmutableList<Pin> digitPins;
 
-        private readonly int interval;
+        private readonly Func<int, byte> values;
+        private readonly ImmutableTimer timer;
+        private readonly int currentDigit;
     }
 }

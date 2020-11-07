@@ -3,51 +3,58 @@ using System.Collections.Immutable;
 
 namespace deskpi.src
 {
-    public class ScrollingGlyphSelector
+    public class ScrollingGlyphSelector : IGlyphSelector
     {
-        public ScrollingGlyphSelector(int delay, int endsDelay, int startTime)
+        public ScrollingGlyphSelector(uint delay, uint endsDelay, int availableDigits)
         {
             this.delay = delay;
             this.endsDelay = endsDelay;
-            this.startTime = startTime;
-        }
-
-        private int GetOffset(ImmutableList<Glyph> text, int availableDigits, int currentTime)
-        {
-            if (text.Count <= availableDigits)
-            {
-                return 0;
-            }
-
-            var steps = text.Count - availableDigits + 1;
-
-            var period = 2 * endsDelay + delay * (steps - 2);
-
-            var modulo = (currentTime - startTime) % period;
-
-            int offset = 0;
-
-            if (modulo + endsDelay > period)
-            {
-                offset = steps - 1;
-            }
-            else if (modulo >= endsDelay)
-            {
-                offset++;
-                modulo -= endsDelay;
-
-                offset += modulo / delay;
-            }
-
-            return offset;
+            this.availableDigits = availableDigits;
+            this.text = ImmutableList<Glyph>.Empty;
+            this.offset = 0;
+            this.timer = new ImmutableTimer(this.endsDelay);
         }
 
 
-        public ImmutableList<Glyph> GetSelected(ImmutableList<Glyph> text,
-            int availableDigits, int currentTime)
+        private ScrollingGlyphSelector(uint delay, uint endsDelay, int availableDigits,
+                ImmutableList<Glyph> text, int offset, ImmutableTimer timer = null)
         {
-            var offset = GetOffset(text, availableDigits, currentTime);
+            this.delay = delay;
+            this.endsDelay = endsDelay;
+            this.availableDigits = availableDigits;
+            this.text = text ?? ImmutableList<Glyph>.Empty;
+            this.offset = offset;
+            this.timer = timer ?? new ImmutableTimer(this.endsDelay);
+        }
 
+        public IGlyphSelector Tick(uint currentTime)
+        {
+            var newTimer = timer.Tick(currentTime);
+            if (timer == newTimer)
+            {
+                return this;
+            }
+
+            var newOffset = offset + 1;
+            if (newOffset > text.Count - availableDigits) newOffset = 0;
+
+            var newInterval =
+                (newOffset == 0 || newOffset == text.Count - availableDigits) ?
+                endsDelay : delay;
+            newTimer = timer.SetInterval(newInterval);
+
+            return new ScrollingGlyphSelector(delay, endsDelay, availableDigits,
+                text, newOffset, newTimer);
+        }
+
+        public IGlyphSelector SetText(ImmutableList<Glyph> text)
+        {
+            return new ScrollingGlyphSelector(delay, endsDelay, availableDigits,
+                text, 0);
+        }
+
+        public ImmutableList<Glyph> GetSelected()
+        {
             if (text.Count <= offset)
             {
                 return ImmutableList<Glyph>.Empty;
@@ -56,8 +63,11 @@ namespace deskpi.src
             return text.GetRange(offset, Math.Min(availableDigits, text.Count - offset));
         }
 
-        private readonly int delay;
-        private readonly int endsDelay;
-        private readonly int startTime;
+        private readonly uint delay;
+        private readonly uint endsDelay;
+        private readonly ImmutableList<Glyph> text;
+        private readonly ImmutableTimer timer;
+        private readonly int offset;
+        private readonly int availableDigits;
     }
 }

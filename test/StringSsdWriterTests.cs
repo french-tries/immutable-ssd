@@ -9,21 +9,36 @@ namespace deskpi.test
     [TestFixture]
     public class StringSsdWriterTests
     {
-        class TestSsdWriter : ISsdWriter<Func<int, byte>>, ITickable
+        static TestSelector newInstance = new TestSelector();
+
+        class TestSelector : IGlyphSelector
+        {
+            public ImmutableList<Glyph> GetSelected() => text;
+
+            public IGlyphSelector SetText(ImmutableList<Glyph> text)
+            {
+                this.text = text;
+                return this;
+            }
+
+            public IGlyphSelector Tick(uint currentTime)
+            {
+                if (CreateNew)
+                {
+                    newInstance.text = text;
+                    return newInstance;
+                }
+                return this;
+            }
+
+            public bool CreateNew { get; set; }
+
+            private ImmutableList<Glyph> text;
+        }
+
+        class TestSsdWriter : ISsdWriter<Func<int, byte>>
         {
             public int AvailableDigits => 3;
-
-            public ITickable Write(Func<int, byte> values)
-            {
-                this.lastValues = values;
-                return this;
-            }
-
-            public ITickable Tick(int currentTime)
-            {
-                lastTime = currentTime;
-                return this;
-            }
 
             public void TestValues(ImmutableList<byte> expected)
             {
@@ -63,20 +78,32 @@ namespace deskpi.test
                 lastTime = null;
             }
 
+            public ISsdWriter<Func<int, byte>> Write(Func<int, byte> values)
+            {
+                lastValues = values;
+                return this;
+            }
+
+            public ISsdWriter<Func<int, byte>> Tick(uint currentTime)
+            {
+                lastTime = currentTime;
+                return this;
+            }
+
             private Func<int, byte> lastValues;
-            private int? lastTime;
+            private uint? lastTime;
         }
 
         [TestCase]
         public void WriteString_WritesAndTicks()
         {
             var testWriter = new TestSsdWriter();
+            var testSelector = new TestSelector();
             var stringWriter = new StringSsdWriter(testWriter,
-                (Glyph g) => (byte)g.Character,
-                (ImmutableList<Glyph> text, int availableDigits, int currentTime) 
-                    => text);
+                (Glyph g) => (byte)g.Character, testSelector);
 
             var str = "123";
+            testSelector.CreateNew = true;
             var tickable = stringWriter.Write(str).Tick(0);
 
             testWriter.TestValues(ImmutableList<byte>.Empty
@@ -88,10 +115,9 @@ namespace deskpi.test
         public void WriteString_SameContent_DoNotWritesAgain()
         {
             var testWriter = new TestSsdWriter();
+            var testSelector = new TestSelector();
             var stringWriter = new StringSsdWriter(testWriter,
-                (Glyph g) => (byte)g.Character,
-                (ImmutableList<Glyph> text, int availableDigits, int currentTime)
-                    => text);
+                (Glyph g) => (byte)g.Character, testSelector);
 
             var str = "123";
             var tickable = stringWriter.Write(str).Tick(0);

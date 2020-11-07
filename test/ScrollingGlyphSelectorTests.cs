@@ -10,11 +10,11 @@ namespace deskpi.test
     public class ScrollingGlyphSelectorTests
     {
         [TestCase]
-        public void GetGlyph_LongerIndexThanSource_ReturnsEmptyGlyph()
+        public void GetGlyph_Empty_ReturnsEmptyGlyphs()
         {
-            var selector = new ScrollingGlyphSelector(1,2,0);
+            var selector = new ScrollingGlyphSelector(1,2,1);
 
-            Assert.AreEqual(ImmutableList<Glyph>.Empty, selector.GetSelected(ImmutableList<Glyph>.Empty, 2, 0));
+            Assert.AreEqual(ImmutableList<Glyph>.Empty, selector.GetSelected());
         }
 
         [TestCase]
@@ -23,12 +23,12 @@ namespace deskpi.test
             var text = ImmutableList<Glyph>.Empty.Add(new Glyph('a', true))
                 .Add(new Glyph('b', false)).Add(new Glyph('c', true));
 
-            int delay = 1;
-            int endsDelay = 2;
+            uint delay = 1;
+            uint endsDelay = 2;
 
-            var selector = new ScrollingGlyphSelector(delay, endsDelay, 0);
+            var selector = new ScrollingGlyphSelector(delay, endsDelay, 3).SetText(text);
 
-            Assert.AreEqual(text, selector.GetSelected(text, 3, 0));
+            Assert.AreEqual(text, selector.GetSelected());
         }
 
         [TestCase]
@@ -37,12 +37,12 @@ namespace deskpi.test
             var text = ImmutableList<Glyph>.Empty.Add(new Glyph('a', true))
                 .Add(new Glyph('b', false)).Add(new Glyph('c', true));
 
-            int delay = 1;
-            int endsDelay = 2;
+            uint delay = 1;
+            uint endsDelay = 2;
 
-            var selector = new ScrollingGlyphSelector(delay, endsDelay, 0);
+            var selector = new ScrollingGlyphSelector(delay, endsDelay, 2).SetText(text);
 
-            Assert.True(text.GetRange(0,2).SequenceEqual(selector.GetSelected(text, 2, 0)));
+            Assert.True(text.GetRange(0,2).SequenceEqual(selector.GetSelected()));
         }
 
         [TestCase]
@@ -51,12 +51,12 @@ namespace deskpi.test
             var text = ImmutableList<Glyph>.Empty.Add(new Glyph('a', true))
                 .Add(new Glyph('b', false)).Add(new Glyph('c', true));
 
-            int delay = 1;
-            int endsDelay = 2;
+            uint delay = 1;
+            uint endsDelay = 2;
 
-            var selector = new ScrollingGlyphSelector(delay, endsDelay, 0);
+            var selector = new ScrollingGlyphSelector(delay, endsDelay, 3);
 
-            Assert.True(text.SequenceEqual(selector.GetSelected(text, 4, 0)));
+            Assert.True(text.SequenceEqual(selector.GetSelected()));
         }
 
 
@@ -66,14 +66,19 @@ namespace deskpi.test
             var text = ImmutableList<Glyph>.Empty.Add(new Glyph('a', true))
                 .Add(new Glyph('b', false)).Add(new Glyph('c', true));
 
-            int delay = 1;
-            int endsDelay = 2;
+            uint delay = 1;
+            uint endsDelay = 2;
 
-            var selector = new ScrollingGlyphSelector(delay, endsDelay, 0);
+            var selector = new ScrollingGlyphSelector(delay, endsDelay, 1).SetText(text);
 
-            Assert.True(text.GetRange(1, 1).SequenceEqual(selector.GetSelected(text, 1, 2)));
-            Assert.True(text.GetRange(2, 1).SequenceEqual(selector.GetSelected(text, 1, 3)));
-            Assert.True(text.GetRange(0, 1).SequenceEqual(selector.GetSelected(text, 1, 5)));
+            selector = selector.Tick(2);
+            Assert.True(text.GetRange(1, 1).SequenceEqual(selector.GetSelected()));
+
+            selector = selector.Tick(3);
+            Assert.True(text.GetRange(2, 1).SequenceEqual(selector.GetSelected()));
+
+            selector = selector.Tick(5);
+            Assert.True(text.GetRange(0, 1).SequenceEqual(selector.GetSelected()));
         }
     }
 }

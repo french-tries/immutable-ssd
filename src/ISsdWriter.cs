@@ -2,10 +2,9 @@
 
 namespace blink.src
 {
-    public interface ISsdWriter<T>
+    public interface ISsdWriter<TPARAM> : ITickable<ISsdWriter<TPARAM>>
     {
         int AvailableDigits { get; }
-
-        ITickable Write(T values);
+        ISsdWriter<TPARAM> Write(TPARAM values);
     }
 }
