@@ -31,6 +31,11 @@ namespace deskpi.test
                 return this;
             }
 
+            public uint Remaining(uint currentTime)
+            {
+                throw new NotImplementedException();
+            }
+
             public bool CreateNew { get; set; }
 
             private ImmutableList<Glyph> text;
@@ -88,6 +93,11 @@ namespace deskpi.test
             {
                 lastTime = currentTime;
                 return this;
+            }
+
+            public uint Remaining(uint currentTime)
+            {
+                throw new NotImplementedException();
             }
 
             private Func<int, byte> lastValues;

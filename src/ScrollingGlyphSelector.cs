@@ -63,6 +63,8 @@ namespace deskpi.src
             return text.GetRange(offset, Math.Min(availableDigits, text.Count - offset));
         }
 
+        public uint Remaining(uint currentTime) => timer.Remaining(currentTime);
+
         private readonly uint delay;
         private readonly uint endsDelay;
         private readonly ImmutableList<Glyph> text;

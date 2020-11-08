@@ -94,6 +94,7 @@
     <Compile Include="src\GpioHandler.cs" />
     <Compile Include="src\ImmutableTimer.cs" />
     <Compile Include="src\IGlyphSelector.cs" />
+    <Compile Include="test\ImmutableTimerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

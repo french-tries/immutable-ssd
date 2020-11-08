@@ -82,6 +82,8 @@ namespace blink.src
                 newTimer, nextDigit);
         }
 
+        public uint Remaining(uint currentTime) => timer.Remaining(currentTime);
+
         public int AvailableDigits => digitPins.Count;
 
         private readonly StepApplier applier;

@@ -37,6 +37,9 @@ namespace deskpi.src
             return this;
         }
 
+        public uint Remaining(uint currentTime) =>
+            Math.Min(writer.Remaining(currentTime), selector.Remaining(currentTime));
+
         public int AvailableDigits => writer.AvailableDigits;
 
         private readonly ISsdWriter<Func<int, byte>> writer;
