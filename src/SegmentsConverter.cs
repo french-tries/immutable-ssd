@@ -59,15 +59,13 @@ namespace blink.src
 
         public byte GetSegments(Glyph glyph)
         {
-            if (values.ContainsKey(glyph.Character))
+            var value = char.ToLower(glyph.Character);
+            if (values.ContainsKey(value))
             {
                 byte dotMask = (byte)(glyph.Dot ? 0b00000001 : 0b00000000);
-                return (byte)(values[glyph.Character] & dotMask);
+                return (byte)(values[value] | dotMask);
             }
-            else
-            {
-                return 0;
-            }
+            return 0;
         }
 
         private readonly ImmutableDictionary<char, byte> values;

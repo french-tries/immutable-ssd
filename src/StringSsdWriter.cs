@@ -25,8 +25,9 @@ namespace deskpi.src
 
             if (selector != newSelector)
             {
-                var selected = selector.GetSelected();
-                newWriter = newWriter.Write((index) => converter(selected[index]));
+                var selected = newSelector.GetSelected();
+                newWriter = newWriter.Write((index) =>
+                    index >= selected.Count ? (byte)0 : converter(selected[index]));
             }
             newWriter = newWriter.Tick(currentTime);
 

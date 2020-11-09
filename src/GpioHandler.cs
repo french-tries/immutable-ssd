@@ -40,6 +40,19 @@ namespace deskpi.src
             }
         }
 
+        public uint Millis {  get { return Pi.Timing.Milliseconds; } }
+        public uint Micros { get { return Pi.Timing.Microseconds; } }
+
+        public void SleepMillis(uint millis)
+        {
+            Pi.Timing.SleepMilliseconds(millis);
+        }
+
+        public void SleepMicros(uint micros)
+        {
+            Pi.Timing.SleepMicroseconds(micros);
+        }
+
         private readonly Dictionary<Pin, IGpioPin> pins;
     }
 }

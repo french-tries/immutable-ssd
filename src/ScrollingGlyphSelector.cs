@@ -39,9 +39,9 @@ namespace deskpi.src
             if (newOffset > text.Count - availableDigits) newOffset = 0;
 
             var newInterval =
-                (newOffset == 0 || newOffset == text.Count - availableDigits) ?
+                (newOffset == 0 || newOffset == (text.Count - availableDigits)) ?
                 endsDelay : delay;
-            newTimer = timer.SetInterval(newInterval);
+            newTimer = newTimer.SetInterval(newInterval);
 
             return new ScrollingGlyphSelector(delay, endsDelay, availableDigits,
                 text, newOffset, newTimer);
