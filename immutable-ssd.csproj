@@ -96,6 +96,7 @@
     <Compile Include="src\IGlyphSelector.cs" />
     <Compile Include="test\ImmutableTimerTests.cs" />
     <Compile Include="src\ConsoleGpioHandler.cs" />
+    <Compile Include="src\SimplerDirectSsdWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

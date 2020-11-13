@@ -1,7 +1,7 @@
 ﻿using System;
 using blink.src;
 
-namespace deskpi.src
+namespace immutableSsd.src
 {
     public class StringSsdWriter : ISsdWriter<string>
     {

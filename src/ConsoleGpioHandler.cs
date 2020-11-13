@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace deskpi.src
+namespace immutableSsd.src
 {
     public class ConsoleGpioHandler
     {

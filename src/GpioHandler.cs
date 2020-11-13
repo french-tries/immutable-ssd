@@ -5,7 +5,7 @@ using Unosquare.RaspberryIO;
 using Unosquare.RaspberryIO.Abstractions;
 using Unosquare.WiringPi;
 
-namespace deskpi.src
+namespace immutableSsd.src
 {
     public class GpioHandler
     {
@@ -15,16 +15,16 @@ namespace deskpi.src
             pins = new Dictionary<Pin, IGpioPin>();
         }
 
-        private void Write(WriteStep step)
+        public void Write(Pin pin, bool value)
         {
-            if(!pins.ContainsKey(step.Pin))
+            if (!pins.ContainsKey(pin))
             {
-                var gpioPin = Pi.Gpio[step.Pin.Id];
+                var gpioPin = Pi.Gpio[pin.Id];
                 gpioPin.PinMode = GpioPinDriveMode.Output;
 
-                pins.Add(step.Pin, gpioPin);
+                pins.Add(pin, gpioPin);
             }
-            pins[step.Pin].Write(step.Value == step.Pin.ActiveHigh);
+            pins[pin].Write(value == pin.ActiveHigh);
         }
 
         public void Handle(Step step)
@@ -32,7 +32,7 @@ namespace deskpi.src
             switch(step)
             {
                 case WriteStep writeStep:
-                    Write(writeStep);
+                    Write(writeStep.Pin, writeStep.Value);
                     break;
                 default:
                     Debug.Fail("Unrecognised step");

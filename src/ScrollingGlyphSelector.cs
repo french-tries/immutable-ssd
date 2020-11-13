@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 
-namespace deskpi.src
+namespace immutableSsd.src
 {
     public class ScrollingGlyphSelector : IGlyphSelector
     {
@@ -11,19 +11,19 @@ namespace deskpi.src
             this.endsDelay = endsDelay;
             this.availableDigits = availableDigits;
             this.text = ImmutableList<Glyph>.Empty;
-            this.offset = 0;
+            this.offset = text.Count - availableDigits;
             this.timer = new ImmutableTimer(this.endsDelay);
         }
 
 
         private ScrollingGlyphSelector(uint delay, uint endsDelay, int availableDigits,
-                ImmutableList<Glyph> text, int offset, ImmutableTimer timer = null)
+                ImmutableList<Glyph> text, int? offset =null, ImmutableTimer timer = null)
         {
             this.delay = delay;
             this.endsDelay = endsDelay;
             this.availableDigits = availableDigits;
             this.text = text ?? ImmutableList<Glyph>.Empty;
-            this.offset = offset;
+            this.offset = offset ?? text.Count - availableDigits;
             this.timer = timer ?? new ImmutableTimer(this.endsDelay);
         }
 
@@ -50,7 +50,7 @@ namespace deskpi.src
         public IGlyphSelector SetText(ImmutableList<Glyph> text)
         {
             return new ScrollingGlyphSelector(delay, endsDelay, availableDigits,
-                text, 0);
+                text);
         }
 
         public ImmutableList<Glyph> GetSelected()

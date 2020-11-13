@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using blink.src;
-using deskpi.src;
+using immutableSsd.src;
 using Unosquare.RaspberryIO;
 using Unosquare.RaspberryIO.Abstractions;
 using Unosquare.WiringPi;
@@ -57,11 +57,11 @@ namespace blink
                 .Add(new Pin(9, false)).Add(new Pin(10, false));
 
             var directWriter =
-                new DirectSsdWriter(segment_pins, digit_pins, gpioHandler.Handle, 500);
+                new SimplerDirectSsdWriter(segment_pins, digit_pins, gpioHandler);
 
             var converter = new SegmentsConverter();
 
-            var selector = new ScrollingGlyphSelector(100000, 200000, digit_pins.Count);
+            var selector = new ScrollingGlyphSelector(1000000, 2000000, digit_pins.Count);
 
             ISsdWriter<string> stringWriter = 
                 new StringSsdWriter(directWriter,converter.GetSegments, selector);
@@ -69,12 +69,12 @@ namespace blink
             stringWriter = stringWriter.Write("Hello world please work");
 
             uint millis = 0;
-            uint step = 100;
+            uint step = 800;
             while (true)
             {
                 stringWriter = stringWriter.Tick(millis);
 
-                gpioHandler.SleepMillis(step);
+                gpioHandler.SleepMicros(step);
                 millis += step;
             }
         }

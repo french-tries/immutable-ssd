@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace deskpi.src
+namespace immutableSsd.src
 {
     public interface IGlyphSelector : ITickable<IGlyphSelector>
     {

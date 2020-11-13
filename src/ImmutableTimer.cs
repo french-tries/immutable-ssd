@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace deskpi.src
+namespace immutableSsd.src
 {
     public class ImmutableTimer : ITickable<ImmutableTimer>
     {

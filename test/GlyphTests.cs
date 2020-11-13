@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Immutable;
-using deskpi.src;
+using immutableSsd.src;
 using NUnit.Framework;
 
-namespace deskpi.test
+namespace immutableSsd.test
 {
     [TestFixture]
     public class GlyphTests
